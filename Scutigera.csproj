@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<Company>LB Gamer/M4rbleL1ne</Company>
+    <TargetFramework>net35</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<EmbeddedResource Include="assets\icon_Scutigera.png">
+      <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+	<EmbeddedResource Include="assets\ScutigeraBackShell.png">
+	  <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+	<EmbeddedResource Include="assets\ScutigeraBellyShell.png">
+	  <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+	<EmbeddedResource Include="assets\ScutigeraLegB.png">
+	  <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+	<EmbeddedResource Include="assets\ScutigeraSegment.png">
+	  <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+	<EmbeddedResource Include="assets\ScutigeraWing.png">
+	  <LogicalName>%(Filename)</LogicalName>
+	</EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>References\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>References\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Fisobs">
+      <HintPath>References\Fisobs.dll</HintPath>
+    </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>References\HOOKS-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>References\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>References\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>References\MonoMod.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>References\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

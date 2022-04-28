@@ -1,2 +1,2 @@
 # Rain-World-Scutigera-Creature
-A mod for rain world that adds a new centipede variation: the scutigera. Requires EnumExtender/VirtualEnumsAPI and the latest version of Fisobs.
+A mod for Rain World that adds a new Centipede variation: the Scutigera. Requires EnumExtender/VirtualEnumsAPI and the latest version of Fisobs.

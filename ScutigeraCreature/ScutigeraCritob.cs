@@ -2,6 +2,7 @@
 using Fisobs.Creatures;
 using Fisobs.Core;
 using System.Collections.Generic;
+using Fisobs.Sandbox;
 using static PathCost.Legality;
 using RWCustom;
 using UnityEngine;
@@ -13,7 +14,7 @@ sealed class ScutigeraCritob : Critob
     internal ScutigeraCritob() : base(EnumExt_Scutigera.Scutigera)
     {
         Icon = new SimpleIcon("icon_Scutigera", Custom.HSL2RGB(Mathf.Lerp(.1527777777777778f, .1861111111111111f, .5f), Mathf.Lerp(.294f, .339f, .5f), .5f));
-        RegisterUnlock(new(EnumExt_Scutigera.ScutigeraUnlock, 0, new(6, false)));
+        RegisterUnlock(new ScutigeraSandboxUnlock(EnumExt_Scutigera.ScutigeraUnlock, 0, new(6, false)));
         new ScutigeraMisc();
         new Scutigera();
         new ScutigeraAI();
@@ -49,8 +50,8 @@ sealed class ScutigeraCritob : Critob
                 CeilingSlope = new(2f, Allowed)
             },
             DefaultRelationship = new(CreatureTemplate.Relationship.Type.Eats, 1f),
-            DamageResistances = new() { Base = .7f, Stab = .1f, Blunt = .1f, Water = .1f, Explosion = .3f, Electric = 102f },
-            StunResistances = new() { Base = .6f, Explosion = .2f, Blunt = .1f, Water = .1f, Electric = 102f },
+            DamageResistances = new() { Base = .75f, Stab = .4f, Blunt = .4f, Water = .5f, Explosion = .5f, Electric = 102f },
+            StunResistances = new() { Base = .6f, Explosion = .3f, Blunt = .4f, Water = 1f, Electric = 102f },
             HasAI = true,
             Pathing = PreBakedPathing.Ancestral(CreatureTemplate.Type.BlueLizard)
         }.IntoTemplate();
@@ -117,6 +118,13 @@ sealed class ScutigeraCritob : Critob
         string[] sprAr = new[] { "icon_Scutigera", "ScutigeraBackShell", "ScutigeraBellyShell", "ScutigeraSegment", "ScutigeraWing", "ScutigeraLegB" };
         foreach (var spr in sprAr) Ext.LoadAtlasFromEmbRes(GetType().Assembly, spr);
     }
+}
+
+sealed class ScutigeraSandboxUnlock : SandboxUnlock
+{
+    public ScutigeraSandboxUnlock(MultiplayerUnlocks.SandboxUnlockID type, int data, CreatureKillScore killScore) : base(type, data, killScore) { }
+
+    public override bool IsUnlocked(MultiplayerUnlocks unlocks) => unlocks.unlockAll || unlocks.progression.miscProgressionData.GetTokenCollected(Type) || (MultiplayerUnlocks.ParentSandboxID(Type).HasValue && unlocks.progression.miscProgressionData.GetTokenCollected(MultiplayerUnlocks.ParentSandboxID(Type).Value));
 }
 
 sealed class ScutigeraProperties : ItemProperties

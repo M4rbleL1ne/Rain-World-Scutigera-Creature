@@ -14,7 +14,7 @@ sealed class ScutigeraMisc
 
     internal ScutigeraMisc()
     {
-        On.Player.CanEatMeat += (orig, self, crit) => crit.Template.type == EnumExt_Scutigera.Scutigera || orig(self, crit);
+        On.Player.CanEatMeat += (orig, self, crit) => crit.dead && crit.Template.type == EnumExt_Scutigera.Scutigera || orig(self, crit);
         On.WorldLoader.CreatureTypeFromString += (orig, s) => Regex.IsMatch(s, "/scut(igera)?/gi") ? EnumExt_Scutigera.Scutigera : orig(s);
         On.DevInterface.MapPage.CreatureVis.CritCol += (orig, crit) => crit.creatureTemplate.type == EnumExt_Scutigera.Scutigera ? Custom.HSL2RGB(Mathf.Lerp(.1527777777777778f, .1861111111111111f, .5f), Mathf.Lerp(.294f, .339f, .5f), .5f) : orig(crit);
         On.DevInterface.MapPage.CreatureVis.CritString += (orig, crit) => crit.creatureTemplate.type == EnumExt_Scutigera.Scutigera ? "scut" : orig(crit);
@@ -44,7 +44,6 @@ sealed class ScutigeraMisc
             if (ID is MultiplayerUnlocks.LevelUnlockID.Hidden) list.Add(EnumExt_Scutigera.Scutigera);
             return list;
         };
-        On.MultiplayerUnlocks.FallBackCrit += (orig, crit) => crit == EnumExt_Scutigera.Scutigera ? CreatureTemplate.Type.Centipede : orig(crit);
         IL.ShelterDoor.KillAllHostiles += il =>
         {
             ILCursor c = new(il);

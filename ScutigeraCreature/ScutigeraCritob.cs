@@ -1,5 +1,4 @@
-﻿using Fisobs.Properties;
-using Fisobs.Creatures;
+﻿using Fisobs.Creatures;
 using Fisobs.Core;
 using System.Collections.Generic;
 using Fisobs.Sandbox;
@@ -14,7 +13,7 @@ sealed class ScutigeraCritob : Critob
     internal ScutigeraCritob() : base(EnumExt_Scutigera.Scutigera)
     {
         Icon = new SimpleIcon("icon_Scutigera", Custom.HSL2RGB(Mathf.Lerp(.1527777777777778f, .1861111111111111f, .5f), Mathf.Lerp(.294f, .339f, .5f), .5f));
-        RegisterUnlock(new ScutigeraSandboxUnlock(EnumExt_Scutigera.ScutigeraUnlock, 0, new(6, false)));
+        RegisterUnlock(KillScore.Configurable(6), EnumExt_Scutigera.ScutigeraUnlock);
         new ScutigeraMisc();
         new Scutigera();
         new ScutigeraAI();
@@ -111,23 +110,11 @@ sealed class ScutigeraCritob : Critob
 
     public override CreatureState GetState(AbstractCreature acrit) => new Centipede.CentipedeState(acrit);
 
-    public override ItemProperties? Properties(PhysicalObject forObject) => forObject is Centipede c && c.abstractCreature.creatureTemplate.type == EnumExt_Scutigera.Scutigera ? new ScutigeraProperties() : null;
-
     public override void LoadResources(RainWorld rainWorld)
     {
         string[] sprAr = new[] { "icon_Scutigera", "ScutigeraBackShell", "ScutigeraBellyShell", "ScutigeraSegment", "ScutigeraWing", "ScutigeraLegB" };
         foreach (var spr in sprAr) Ext.LoadAtlasFromEmbRes(GetType().Assembly, spr);
     }
-}
 
-sealed class ScutigeraSandboxUnlock : SandboxUnlock
-{
-    public ScutigeraSandboxUnlock(MultiplayerUnlocks.SandboxUnlockID type, int data, CreatureKillScore killScore) : base(type, data, killScore) { }
-
-    public override bool IsUnlocked(MultiplayerUnlocks unlocks) => unlocks.unlockAll || unlocks.progression.miscProgressionData.GetTokenCollected(Type) || (MultiplayerUnlocks.ParentSandboxID(Type).HasValue && unlocks.progression.miscProgressionData.GetTokenCollected(MultiplayerUnlocks.ParentSandboxID(Type).Value));
-}
-
-sealed class ScutigeraProperties : ItemProperties
-{
-    public override void Meat(Player player, ref bool meat) => meat = true;
+    public override CreatureTemplate.Type? ArenaFallback(CreatureTemplate.Type type) => CreatureTemplate.Type.Centipede;
 }

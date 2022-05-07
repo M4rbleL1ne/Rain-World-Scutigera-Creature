@@ -74,7 +74,7 @@ sealed class ScutigeraAI
         IL.CentipedeAI.Update += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(0),
                 x => x.MatchCall<ArtificialIntelligence>("get_noiseTracker"),
                 x => x.MatchLdarg(0),
@@ -84,23 +84,27 @@ sealed class ScutigeraAI
                 x => x.MatchLdcR4(.0f),
                 x => x.MatchBr(out _),
                 x => x.MatchLdcR4(1.5f),
-                x => x.MatchStfld<NoiseTracker>("hearingSkill"));
-            c.Emit(Ldarg_0);
-            c.EmitDelegate((CentipedeAI self) =>
+                x => x.MatchStfld<NoiseTracker>("hearingSkill")))
             {
-                if (self.centipede is not null && self.centipede.Scutigera()) self.noiseTracker.hearingSkill = 1.5f;
-            });
-            c.GotoNext(MoveType.After,
+                c.Emit(Ldarg_0);
+                c.EmitDelegate((CentipedeAI self) =>
+                {
+                    if (self.centipede is not null && self.centipede.Scutigera()) self.noiseTracker.hearingSkill = 1.5f;
+                });
+            }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 1)");
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdcR4(.1f),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchStfld<CentipedeAI>("excitement"),
                 x => x.MatchLdarg(0),
-                x => x.MatchLdfld<CentipedeAI>("centipede"));
-            if (c.Next.MatchCallvirt<Centipede>("get_Centiwing"))
+                x => x.MatchLdfld<CentipedeAI>("centipede"))
+            && c.Next.MatchCallvirt<Centipede>("get_Centiwing"))
             {
                 c.Next.OpCode = Call;
                 c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrWing");
             }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 2)");
         };
         On.CentipedeAI.CreatureSpotted += (orig, self, firstSpot, creatureRep) =>
         {

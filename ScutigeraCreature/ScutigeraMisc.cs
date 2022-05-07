@@ -50,7 +50,7 @@ sealed class ScutigeraMisc
             int loc1 = -1;
             ILLabel? beq1 = null;
             MethodReference? callvirt2 = null;
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<UpdatableAndDeletable>("room"),
                 x => x.MatchCallvirt<Room>("get_abstractRoom"),
@@ -60,8 +60,8 @@ sealed class ScutigeraMisc
                 x => x.MatchLdfld<AbstractCreature>("creatureTemplate"),
                 x => x.MatchLdfld<CreatureTemplate>("type"),
                 x => x.MatchLdcI4(40),
-                x => x.MatchBeq(out beq1));
-            if (loc1 != -1 && beq1 is not null && callvirt2 is not null)
+                x => x.MatchBeq(out beq1))
+            && loc1 != -1 && beq1 is not null && callvirt2 is not null)
             {
                 c.Emit(Ldarg_0);
                 c.Emit<UpdatableAndDeletable>(Ldfld, "room");
@@ -74,25 +74,27 @@ sealed class ScutigeraMisc
                 c.Emit(Ldsfld, typeof(EnumExt_Scutigera).GetField("Scutigera"));
                 c.Emit(Beq, beq1);
             }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook ShelterDoor.KillAllHostiles!");
         };
         HK.IL.BigSpiderAI.IUseARelationshipTracker_UpdateDynamicRelationship += il =>
         {
             ILCursor c = new(il);
             var stloc1 = -1;
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(0),
                 x => x.MatchLdarg(1),
                 x => x.MatchLdfld<RelationshipTracker.DynamicRelationship>("trackerRep"),
                 x => x.MatchLdfld<Tracker.CreatureRepresentation>("representedCreature"),
                 x => x.MatchCall<ArtificialIntelligence>("StaticRelationship"),
-                x => x.MatchStloc(out stloc1));
-            if (stloc1 != -1)
+                x => x.MatchStloc(out stloc1))
+            && stloc1 != -1)
             {
                 c.Emit(Ldarg_0);
                 c.Emit(Ldarg_1);
                 c.Emit(Ldloca_S, il.Body.Variables[stloc1]);
                 c.Emit(Call, typeof(ScutigeraExtensions).GetMethod("TweakSpiderRelationshipWithScut"));
             }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook BigSpiderAI.IUseARelationshipTracker_UpdateDynamicRelationship!");
         };
     }
 }

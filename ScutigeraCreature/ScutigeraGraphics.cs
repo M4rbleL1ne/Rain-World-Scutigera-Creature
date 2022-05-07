@@ -34,33 +34,36 @@ sealed class ScutigeraGraphics
         IL.CentipedeGraphics.InitiateSprites += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(
+            if (c.TryGotoNext(
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<CentipedeGraphics>("centipede"),
                 x => x.MatchCallvirt<Centipede>("get_Red"),
                 x => x.MatchBrfalse(out _),
                 x => x.MatchLdcI4(0),
                 x => x.MatchStloc(7),
-                x => x.MatchBr(out _));
-            c.Emit(Ldarg_0);
-            c.Emit(Ldarg_1);
-            c.EmitDelegate((CentipedeGraphics self, RoomCamera.SpriteLeaser sLeaser) =>
+                x => x.MatchBr(out _)))
             {
-                if (self.centipede.Scutigera())
+                c.Emit(Ldarg_0);
+                c.Emit(Ldarg_1);
+                c.EmitDelegate((CentipedeGraphics self, RoomCamera.SpriteLeaser sLeaser) =>
                 {
-                    for (int l = 0; l < 2; l++)
+                    if (self.centipede.Scutigera())
                     {
-                        for (int num = 0; num < self.wingPairs; num++) sLeaser.sprites[self.WingSprite(l, num)] = new CustomFSprite("ScutigeraWing");
+                        for (int l = 0; l < 2; l++)
+                        {
+                            for (int num = 0; num < self.wingPairs; num++) sLeaser.sprites[self.WingSprite(l, num)] = new CustomFSprite("ScutigeraWing");
+                        }
+                        for (int i = 0; i < self.owner.bodyChunks.Length; i++)
+                        {
+                            sLeaser.sprites[self.SegmentSprite(i)] = new("ScutigeraSegment") { scaleY = self.owner.bodyChunks[i].rad * 1.8f * (1f / 12f) };
+                            sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.anisoLevel = 1;
+                            sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.filterMode = 0;
+                            for (int j = 0; j < 2; j++) sLeaser.sprites[self.LegSprite(i, j, 1)] = new VertexColorSprite("ScutigeraLegB");
+                        }
                     }
-                    for (int i = 0; i < self.owner.bodyChunks.Length; i++)
-                    {
-                        sLeaser.sprites[self.SegmentSprite(i)] = new("ScutigeraSegment") { scaleY = self.owner.bodyChunks[i].rad * 1.8f * (1f / 12f) };
-                        sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.anisoLevel = 1;
-                        sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.filterMode = 0;
-                        for (int j = 0; j < 2; j++) sLeaser.sprites[self.LegSprite(i, j, 1)] = new VertexColorSprite("ScutigeraLegB");
-                    }
-                }
-            });
+                });
+            }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.InitiateSprites!");
         };
         On.CentipedeGraphics.DrawSprites += (orig, self, sLeaser, rCam, timeStacker, camPos) =>
         {
@@ -101,7 +104,7 @@ sealed class ScutigeraGraphics
         {
             ILCursor c = new(il);
             int loc = -1;
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchSub(),
                 x => x.MatchMul(),
                 x => x.MatchCall<Mathf>("Lerp"),
@@ -110,14 +113,15 @@ sealed class ScutigeraGraphics
                 x => x.MatchLdfld<CentipedeGraphics>("lightSource"),
                 x => x.MatchLdloc(loc),
                 x => x.MatchLdloc(loc),
-                x => x.MatchLdcR4(1f));
-            if (c.Next.MatchNewobj<Color>())
+                x => x.MatchLdcR4(1f))
+            && c.Next.MatchNewobj<Color>())
             {
                 c.Next.OpCode = Call;
                 c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ShockColorIfScut");
                 c.Emit(Ldarg_0);
                 c.Emit<CentipedeGraphics>(Ldfld, "centipede");
             }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.Update!");
         };
         HK.On.CentipedeGraphics.get_SecondaryShellColor += (orig, self) =>
         {

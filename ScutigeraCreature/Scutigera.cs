@@ -14,7 +14,7 @@ sealed class Scutigera
         IL.Centipede.ctor += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(MoveType.After,
+            if(c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(1),
                 x => x.MatchLdfld<AbstractCreature>("state"),
                 x => x.MatchLdcR4(2.3f),
@@ -23,13 +23,16 @@ sealed class Scutigera
                 x => x.MatchLdfld<Centipede>("size"),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchCall<Mathf>("RoundToInt"),
-                x => x.MatchStfld<CreatureState>("meatLeft"));
-            c.Emit(Ldarg_0);
-            c.Emit(Ldarg_1);
-            c.EmitDelegate((Centipede self, AbstractCreature abstractCreature) =>
+                x => x.MatchStfld<CreatureState>("meatLeft")))
             {
-                if (self.Scutigera()) abstractCreature.state.meatLeft = 5;
-            });
+                c.Emit(Ldarg_0);
+                c.Emit(Ldarg_1);
+                c.EmitDelegate((Centipede self, AbstractCreature abstractCreature) =>
+                {
+                    if (self.Scutigera()) abstractCreature.state.meatLeft = 5;
+                });
+            }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.ctor!");
         };
         On.Centipede.ctor += (orig, self, abstractCreature, world) =>
         {
@@ -66,39 +69,47 @@ sealed class Scutigera
         IL.Centipede.Violence += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(
-                x => x.MatchNewobj<CentipedeShell>());
-            c.Next.Operand = typeof(ScutigeraShell).GetConstructor(new[] { typeof(Vector2), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(float), typeof(bool) });
-            c.Emit(Ldarg_0);
-            c.Emit(Call, typeof(ScutigeraExtensions).GetMethod("Scutigera"));
+            if (c.TryGotoNext(
+                x => x.MatchNewobj<CentipedeShell>()))
+            {
+                c.Next.Operand = typeof(ScutigeraShell).GetConstructor(new[] { typeof(Vector2), typeof(Vector2), typeof(float), typeof(float), typeof(float), typeof(float), typeof(bool) });
+                c.Emit(Ldarg_0);
+                c.Emit(Call, typeof(ScutigeraExtensions).GetMethod("Scutigera"));
+            }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Violence! (part 1)");
             foreach (var i in il.Instrs)
             {
                 if (i.MatchCall<Centipede>("get_Red")) i.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrRed");
             }
-            c.GotoNext(MoveType.After,
-                x => x.MatchCall<Creature>("Violence"));
-            c.Emit(Ldarg_0);
-            c.EmitDelegate((Centipede self) =>
+            if (c.TryGotoNext(MoveType.After,
+                x => x.MatchCall<Creature>("Violence")))
             {
-                if (self.Scutigera()) self.stun = 0;
-            });
+                c.Emit(Ldarg_0);
+                c.EmitDelegate((Centipede self) =>
+                {
+                    if (self.Scutigera()) self.stun = 0;
+                });
+            }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Violence! (part 2)");
+
         };
         IL.Centipede.Crawl += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchCallvirt<HealthState>("get_ClampedHealth"),
                 x => x.MatchMul(),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchCall<Vector2>("op_Multiply"),
-                x => x.MatchLdarg(0));
-            if (c.Next.MatchCall<Centipede>("get_Red")) c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrRed");
+                x => x.MatchLdarg(0))
+            && c.Next.MatchCall<Centipede>("get_Red")) c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrRed");
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Crawl!");
         };
         On.Centipede.ShortCutColor += (orig, self) => self.Scutigera() ? Custom.HSL2RGB(Mathf.Lerp(.1527777777777778f, .1861111111111111f, .5f), Mathf.Lerp(.294f, .339f, .5f), .5f) : orig(self);
         IL.Centipede.Shock += il =>
         {
             ILCursor c = new(il);
-            c.GotoNext(MoveType.After,
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchCall(typeof(Custom).GetMethod("RNV")),
                 x => x.MatchLdcR4(4f),
                 x => x.MatchLdcR4(14f),
@@ -107,14 +118,15 @@ sealed class Scutigera
                 x => x.MatchCall<Vector2>("op_Multiply"),
                 x => x.MatchLdcR4(.7f),
                 x => x.MatchLdcR4(.7f),
-                x => x.MatchLdcR4(1f));
-            if (c.Next.MatchNewobj<Color>())
+                x => x.MatchLdcR4(1f))
+            && c.Next.MatchNewobj<Color>())
             {
                 c.Next.OpCode = Call;
                 c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ShockColorIfScut");
                 c.Emit(Ldarg_0);
             }
-            c.GotoNext(MoveType.After,
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Shock! (part 1)");
+            if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdfld<Centipede>("size"),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchLdcR4(.2f),
@@ -126,13 +138,14 @@ sealed class Scutigera
                 x => x.MatchLdarg(0),
                 x => x.MatchLdcR4(.7f),
                 x => x.MatchLdcR4(.7f),
-                x => x.MatchLdcR4(1f));
-            if (c.Next.MatchNewobj<Color>())
+                x => x.MatchLdcR4(1f))
+            && c.Next.MatchNewobj<Color>())
             {
                 c.Next.OpCode = Call;
                 c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ShockColorIfScut");
                 c.Emit(Ldarg_0);
             }
+            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Shock! (part 2)");
         };
     }
 }

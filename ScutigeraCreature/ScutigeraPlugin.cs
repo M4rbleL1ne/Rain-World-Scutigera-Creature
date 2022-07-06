@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ScutigeraCreature;
 
-[BepInPlugin("lb-fgf-m4r-ik.scutigera-creature", nameof(ScutigeraCreature), "0.1.0")]
+[BepInPlugin("lb-fgf-m4r-ik.scutigera-creature", nameof(ScutigeraCreature), "0.1.0"), BepInDependency("github.notfood.BepInExPartialityWrapper", BepInDependency.DependencyFlags.SoftDependency)]
 sealed class ScutigeraPlugin : BaseUnityPlugin
 {
     internal static ManualLogSource? logger;

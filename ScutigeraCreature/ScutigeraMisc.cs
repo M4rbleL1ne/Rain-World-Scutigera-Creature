@@ -10,8 +10,6 @@ namespace ScutigeraCreature;
 
 sealed class ScutigeraMisc
 {
-    static bool AddToCat = true;
-
     internal ScutigeraMisc()
     {
         On.Player.CanEatMeat += (orig, self, crit) => (crit.dead && crit.Template.type == EnumExt_Scutigera.Scutigera) || orig(self, crit);
@@ -26,17 +24,6 @@ sealed class ScutigeraMisc
                 exponential += .5f;
             }
             else orig(critType, ref linear, ref exponential);
-        };
-        On.DevInterface.RoomAttractivenessPanel.ctor += (orig, self, owner, IDstring, parentNode, pos, title, mapPage) =>
-        {
-            orig(self, owner, IDstring, parentNode, pos, title, mapPage);
-            if (AddToCat)
-            {
-                int newSz = self.categories[5].Length + 1;
-                Array.Resize(ref self.categories[5], newSz);
-                self.categories[5][newSz - 1] = StaticWorld.GetCreatureTemplate(EnumExt_Scutigera.Scutigera).index;
-                AddToCat = false;
-            }
         };
         On.MultiplayerUnlocks.UnlockedCritters += (orig, ID) =>
         {

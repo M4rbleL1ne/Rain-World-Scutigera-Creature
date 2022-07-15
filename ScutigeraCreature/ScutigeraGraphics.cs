@@ -18,7 +18,7 @@ sealed class ScutigeraGraphics
                 self.saturation = Mathf.Lerp(.294f, .339f, Random.value);
                 self.wingPairs = self.centipede.bodyChunks.Length;
                 self.wingLengths = new float[self.totSegs];
-                for (int j = 0; j < self.totSegs; j++)
+                for (var j = 0; j < self.totSegs; j++)
                 {
                     var num = (float)j / (self.totSegs - 1);
                     var num2 = Mathf.Sin(Mathf.Pow(Mathf.InverseLerp(.5f, 0f, num), .75f) * Mathf.PI);
@@ -49,35 +49,40 @@ sealed class ScutigeraGraphics
                 {
                     if (self.centipede.Scutigera())
                     {
-                        for (int l = 0; l < 2; l++)
+                        for (var l = 0; l < 2; l++)
                         {
-                            for (int num = 0; num < self.wingPairs; num++) sLeaser.sprites[self.WingSprite(l, num)] = new CustomFSprite("ScutigeraWing");
+                            for (var num = 0; num < self.wingPairs; num++)
+                                sLeaser.sprites[self.WingSprite(l, num)] = new CustomFSprite("ScutigeraWing");
                         }
-                        for (int i = 0; i < self.owner.bodyChunks.Length; i++)
+                        for (var i = 0; i < self.owner.bodyChunks.Length; i++)
                         {
                             sLeaser.sprites[self.SegmentSprite(i)] = new("ScutigeraSegment") { scaleY = self.owner.bodyChunks[i].rad * 1.8f * (1f / 12f) };
                             sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.anisoLevel = 1;
                             sLeaser.sprites[self.SegmentSprite(i)].element.atlas.texture.filterMode = 0;
-                            for (int j = 0; j < 2; j++) sLeaser.sprites[self.LegSprite(i, j, 1)] = new VertexColorSprite("ScutigeraLegB");
+                            for (var j = 0; j < 2; j++)
+                                sLeaser.sprites[self.LegSprite(i, j, 1)] = new VertexColorSprite("ScutigeraLegB");
                         }
                     }
                 });
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.InitiateSprites!");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.InitiateSprites!");
         };
         On.CentipedeGraphics.DrawSprites += (orig, self, sLeaser, rCam, timeStacker, camPos) =>
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
             if (self.centipede.Scutigera())
             {
-                for (int i = 0; i < self.owner.bodyChunks.Length; i++)
+                for (var i = 0; i < self.owner.bodyChunks.Length; i++)
                 {
-                    if (sLeaser.sprites[self.ShellSprite(i)].element.name is "CentipedeBackShell") sLeaser.sprites[self.ShellSprite(i)].element = Futile.atlasManager.GetElementWithName("ScutigeraBackShell");
-                    else if (sLeaser.sprites[self.ShellSprite(i)].element.name is "CentipedeBellyShell") sLeaser.sprites[self.ShellSprite(i)].element = Futile.atlasManager.GetElementWithName("ScutigeraBellyShell");
+                    if (sLeaser.sprites[self.ShellSprite(i)].element.name is "CentipedeBackShell")
+                        sLeaser.sprites[self.ShellSprite(i)].element = Futile.atlasManager.GetElementWithName("ScutigeraBackShell");
+                    else if (sLeaser.sprites[self.ShellSprite(i)].element.name is "CentipedeBellyShell")
+                        sLeaser.sprites[self.ShellSprite(i)].element = Futile.atlasManager.GetElementWithName("ScutigeraBellyShell");
                 }
-                for (int k = 0; k < 2; k++)
+                for (var k = 0; k < 2; k++)
                 {
-                    for (int num15 = 0; num15 < self.wingPairs; num15++)
+                    for (var num15 = 0; num15 < self.wingPairs; num15++)
                     {
                         if (sLeaser.sprites[self.WingSprite(k, num15)] is CustomFSprite cSpr)
                         {
@@ -103,7 +108,7 @@ sealed class ScutigeraGraphics
         IL.CentipedeGraphics.Update += il =>
         {
             ILCursor c = new(il);
-            int loc = -1;
+            var loc = -1;
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchSub(),
                 x => x.MatchMul(),
@@ -113,22 +118,22 @@ sealed class ScutigeraGraphics
                 x => x.MatchLdfld<CentipedeGraphics>("lightSource"),
                 x => x.MatchLdloc(loc),
                 x => x.MatchLdloc(loc),
-                x => x.MatchLdcR4(1f))
-            && c.Next.MatchNewobj<Color>())
+                x => x.MatchLdcR4(1f),
+                x => x.MatchNewobj<Color>()))
             {
-                c.Next.OpCode = Call;
-                c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ShockColorIfScut");
                 c.Emit(Ldarg_0);
                 c.Emit<CentipedeGraphics>(Ldfld, "centipede");
+                c.EmitDelegate(Color (Color color, Centipede self) => self.Scutigera() ? new(color.r, color.b, color.g) : color);
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.Update!");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeGraphics.Update!");
         };
         HK.On.CentipedeGraphics.get_SecondaryShellColor += (orig, self) =>
         {
             var res = orig(self);
             if (self.centipede is not null && self.centipede.Scutigera())
             {
-                int seed = Random.seed;
+                var seed = Random.seed;
                 Random.seed = self.centipede.abstractCreature.ID.RandomSeed;
                 res = Color.Lerp(res, new(res.r + .2f, res.g + .2f, res.b + .2f), Mathf.Lerp(.1f, .2f, Random.value));
                 Random.seed = seed;

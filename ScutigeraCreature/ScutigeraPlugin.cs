@@ -19,14 +19,16 @@ sealed class ScutigeraPlugin : BaseUnityPlugin
             if (assembly.FullName.Contains("Scutigera"))
             {
                 using var stream = assembly.GetManifestResourceStream(resource);
-                if (stream is null) return null;
-                byte[] array = new byte[stream.Length];
+                if (stream is null)
+                    return null;
+                var array = new byte[stream.Length];
                 stream.Read(array, 0, array.Length);
                 Texture2D texture2D = new(0, 0, TextureFormat.ARGB32, false) { anisoLevel = 1, filterMode = 0 };
                 texture2D.LoadImage(array);
                 return Futile.atlasManager.LoadAtlasFromTexture(resource, texture2D);
             }
-            else return orig(assembly, resource);
+            else
+                return orig(assembly, resource);
         };
         Content.Register(new ScutigeraCritob());
     }

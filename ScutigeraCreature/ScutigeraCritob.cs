@@ -14,10 +14,17 @@ sealed class ScutigeraCritob : Critob
     {
         Icon = new SimpleIcon("icon_Scutigera", Custom.HSL2RGB(Mathf.Lerp(.1527777777777778f, .1861111111111111f, .5f), Mathf.Lerp(.294f, .339f, .5f), .5f));
         RegisterUnlock(KillScore.Configurable(6), EnumExt_Scutigera.ScutigeraUnlock);
-        new ScutigeraMisc();
-        new Scutigera();
-        new ScutigeraAI();
-        new ScutigeraGraphics();
+        try
+        {
+            new ScutigeraMisc();
+            new Scutigera();
+            new ScutigeraAI();
+            new ScutigeraGraphics();
+        }
+        catch (System.Exception e)
+        {
+            ScutigeraPlugin.logger?.LogError(e);
+        }
     }
 
     public override IEnumerable<CreatureTemplate> GetTemplates()
@@ -112,8 +119,9 @@ sealed class ScutigeraCritob : Critob
 
     public override void LoadResources(RainWorld rainWorld)
     {
-        string[] sprAr = new[] { "icon_Scutigera", "ScutigeraBackShell", "ScutigeraBellyShell", "ScutigeraSegment", "ScutigeraWing", "ScutigeraLegB" };
-        foreach (var spr in sprAr) Ext.LoadAtlasFromEmbRes(GetType().Assembly, spr);
+        var sprAr = new[] { "icon_Scutigera", "ScutigeraBackShell", "ScutigeraBellyShell", "ScutigeraSegment", "ScutigeraWing", "ScutigeraLegB" };
+        foreach (var spr in sprAr)
+            Ext.LoadAtlasFromEmbRes(GetType().Assembly, spr);
     }
 
     public override CreatureTemplate.Type? ArenaFallback(CreatureTemplate.Type type) => CreatureTemplate.Type.Centipede;

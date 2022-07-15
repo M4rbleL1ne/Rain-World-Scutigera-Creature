@@ -11,7 +11,8 @@ sealed class ScutigeraAI
         On.CentipedeAI.ctor += (orig, self, creature, world) =>
         {
             orig(self, creature, world);
-            if (self.centipede.Scutigera()) self.pathFinder.stepsPerFrame = 15;
+            if (self.centipede.Scutigera())
+                self.pathFinder.stepsPerFrame = 15;
         };
         HK.On.CentipedeAI.IUseARelationshipTracker_UpdateDynamicRelationship += (orig, self, dRelation) =>
         {
@@ -24,7 +25,8 @@ sealed class ScutigeraAI
                     {
                         result.type = CreatureTemplate.Relationship.Type.Eats;
                         result.intensity = 1f;
-                        if (self.preyTracker is not null) self.preyTracker.currentPrey = new(self.preyTracker, dRelation.trackerRep);
+                        if (self.preyTracker is not null)
+                            self.preyTracker.currentPrey = new(self.preyTracker, dRelation.trackerRep);
                     }
                     else if (result.type is CreatureTemplate.Relationship.Type.Attacks or CreatureTemplate.Relationship.Type.Eats)
                     {
@@ -42,32 +44,37 @@ sealed class ScutigeraAI
             {
                 if (critter.realizedCreature is Creature c)
                 {
-                    if (self.StaticRelationship(c.abstractCreature).type == CreatureTemplate.Relationship.Type.Afraid && !c.dead) result = true;
+                    if (self.StaticRelationship(c.abstractCreature).type == CreatureTemplate.Relationship.Type.Afraid && !c.dead)
+                        result = true;
                     else if (!c.dead && c.grasps is not null && c.grasps.Length > 0)
                     {
-                        foreach (var grasp in c.grasps)
+                        for (var i = 0; i < c.grasps.Length; i++)
                         {
-                            if (grasp?.grabbed is Weapon || self.centipede?.CentiState?.health < .4f)
+                            if (c.grasps[i]?.grabbed is Weapon || self.centipede?.CentiState?.health < .4f)
                             {
                                 result = true;
                                 break;
                             }
-                            else result = false;
+                            else
+                                result = false;
                         }
                     }
-                    else if (c.dead || c.grasps is null || c.grasps.Length <= 0) result = false;
+                    else if (c.dead || c.grasps is null || c.grasps.Length <= 0)
+                        result = false;
                 }
             }
             return result;
         };
         IL.CentipedeAI.VisualScore += il =>
         {
-            foreach (var i in il.Instrs)
+            ILCursor c = new(il);
+            for (var i = 0; i < il.Instrs.Count; i++)
             {
-                if (i.MatchCallvirt<Centipede>("get_Red"))
+                if (il.Instrs[i].MatchCallvirt<Centipede>("get_Red"))
                 {
-                    i.OpCode = Call;
-                    i.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrRed");
+                    c.Goto(i, MoveType.After);
+                    c.Emit(Ldarg_0);
+                    c.EmitDelegate((bool flag, CentipedeAI self) => flag || (self.centipede is Centipede ce && ce.Template.type == EnumExt_Scutigera.Scutigera));
                 }
             }
         };
@@ -89,30 +96,34 @@ sealed class ScutigeraAI
                 c.Emit(Ldarg_0);
                 c.EmitDelegate((CentipedeAI self) =>
                 {
-                    if (self.centipede is not null && self.centipede.Scutigera()) self.noiseTracker.hearingSkill = 1.5f;
+                    if (self.centipede is not null && self.centipede.Scutigera())
+                        self.noiseTracker.hearingSkill = 1.5f;
                 });
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 1)");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 1)");
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdcR4(.1f),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchStfld<CentipedeAI>("excitement"),
                 x => x.MatchLdarg(0),
-                x => x.MatchLdfld<CentipedeAI>("centipede"))
-            && c.Next.MatchCallvirt<Centipede>("get_Centiwing"))
+                x => x.MatchLdfld<CentipedeAI>("centipede"),
+                x => x.MatchCallvirt<Centipede>("get_Centiwing")))
             {
-                c.Next.OpCode = Call;
-                c.Next.Operand = typeof(ScutigeraExtensions).GetMethod("ScutOrWing");
+                c.Emit(Ldarg_0);
+                c.EmitDelegate((bool flag, CentipedeAI self) => flag || (self.centipede is Centipede ce && ce.Template.type == EnumExt_Scutigera.Scutigera));
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 2)");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook CentipedeAI.Update! (part 2)");
         };
         On.CentipedeAI.CreatureSpotted += (orig, self, firstSpot, creatureRep) =>
         {
-            if (creatureRep.representedCreature?.realizedCreature is not null && !creatureRep.representedCreature.realizedCreature.dead && self.centipede?.room is not null && self.centipede.Scutigera() && !self.centipede.dead && self.DoIWantToShockCreature(creatureRep.representedCreature) && self.StaticRelationship(creatureRep.representedCreature).type is CreatureTemplate.Relationship.Type.Eats or CreatureTemplate.Relationship.Type.Attacks)
+            if (creatureRep.representedCreature?.realizedCreature is not null && !creatureRep.representedCreature.realizedCreature.dead && self.centipede?.room is not null && self.centipede.Scutigera() && !self.centipede.dead && self.DoIWantToShockCreature(creatureRep.representedCreature) && self.StaticRelationship(creatureRep.representedCreature).type is CreatureTemplate.Relationship.Type.Eats or CreatureTemplate.Relationship.Type.Attacks && self.centipede.bodyChunks is not null && self.centipede.bodyChunks.Length > 0)
             {
-                foreach (var chunk in self.centipede.bodyChunks)
+                for (var i = 0; i < self.centipede.bodyChunks.Length; i++)
                 {
-                    if (Random.value < .1f) self.centipede.room.AddObject(new ScutigeraFlash(chunk.pos, chunk.rad / (chunk.rad * 30f), self.centipede));
+                    if (Random.value < .1f)
+                        self.centipede.room.AddObject(new ScutigeraFlash(self.centipede.bodyChunks[i].pos, self.centipede.bodyChunks[i].rad / (self.centipede.bodyChunks[i].rad * 30f), self.centipede));
                 }
             }
             orig(self, firstSpot, creatureRep);

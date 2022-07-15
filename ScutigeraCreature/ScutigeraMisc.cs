@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using System;
 using MonoMod.Cil;
 using static Mono.Cecil.Cil.OpCodes;
 using Mono.Cecil;
@@ -23,18 +22,20 @@ sealed class ScutigeraMisc
                 linear += .8f;
                 exponential += .5f;
             }
-            else orig(critType, ref linear, ref exponential);
+            else
+                orig(critType, ref linear, ref exponential);
         };
         On.MultiplayerUnlocks.UnlockedCritters += (orig, ID) =>
         {
             var list = orig(ID);
-            if (ID is MultiplayerUnlocks.LevelUnlockID.Hidden) list.Add(EnumExt_Scutigera.Scutigera);
+            if (ID is MultiplayerUnlocks.LevelUnlockID.Hidden)
+                list.Add(EnumExt_Scutigera.Scutigera);
             return list;
         };
         IL.ShelterDoor.KillAllHostiles += il =>
         {
             ILCursor c = new(il);
-            int loc1 = -1;
+            var loc1 = -1;
             ILLabel? beq1 = null;
             MethodReference? callvirt2 = null;
             if (c.TryGotoNext(MoveType.After,
@@ -61,7 +62,8 @@ sealed class ScutigeraMisc
                 c.Emit(Ldsfld, typeof(EnumExt_Scutigera).GetField("Scutigera"));
                 c.Emit(Beq, beq1);
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook ShelterDoor.KillAllHostiles!");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook ShelterDoor.KillAllHostiles!");
         };
         HK.IL.BigSpiderAI.IUseARelationshipTracker_UpdateDynamicRelationship += il =>
         {
@@ -78,10 +80,17 @@ sealed class ScutigeraMisc
             {
                 c.Emit(Ldarg_0);
                 c.Emit(Ldarg_1);
-                c.Emit(Ldloca_S, il.Body.Variables[stloc1]);
-                c.Emit(Call, typeof(ScutigeraExtensions).GetMethod("TweakSpiderRelationshipWithScut"));
+                c.Emit(Ldloc, il.Body.Variables[stloc1]);
+                c.EmitDelegate((BigSpiderAI self, RelationshipTracker.DynamicRelationship dRelation, CreatureTemplate.Relationship result) =>
+                {
+                    if (self.bug is not null && dRelation?.trackerRep?.representedCreature?.creatureTemplate?.type == EnumExt_Scutigera.Scutigera && dRelation.state is BigSpiderAI.SpiderTrackState st && st.consious && st.totalMass > self.bug.TotalMass * 2f)
+                        result = new(CreatureTemplate.Relationship.Type.Afraid, Mathf.InverseLerp(self.bug.TotalMass, self.bug.TotalMass * 7f, st.totalMass));
+                    return result;
+                });
+                c.Emit(Stloc, il.Body.Variables[stloc1]);
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook BigSpiderAI.IUseARelationshipTracker_UpdateDynamicRelationship!");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook BigSpiderAI.IUseARelationshipTracker_UpdateDynamicRelationship!");
         };
     }
 }

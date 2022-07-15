@@ -70,7 +70,7 @@ sealed class ScutigeraAI
             ILCursor c = new(il);
             for (var i = 0; i < il.Instrs.Count; i++)
             {
-                if (il.Instrs[i].MatchCallvirt<Centipede>("get_Red"))
+                if (il.Instrs[i].MatchCallOrCallvirt<Centipede>("get_Red"))
                 {
                     c.Goto(i, MoveType.After);
                     c.Emit(Ldarg_0);
@@ -83,7 +83,7 @@ sealed class ScutigeraAI
             ILCursor c = new(il);
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(0),
-                x => x.MatchCall<ArtificialIntelligence>("get_noiseTracker"),
+                x => x.MatchCallOrCallvirt<ArtificialIntelligence>("get_noiseTracker"),
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<CentipedeAI>("centipede"),
                 x => x.MatchLdfld<Centipede>("moving"),
@@ -108,7 +108,7 @@ sealed class ScutigeraAI
                 x => x.MatchStfld<CentipedeAI>("excitement"),
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<CentipedeAI>("centipede"),
-                x => x.MatchCallvirt<Centipede>("get_Centiwing")))
+                x => x.MatchCallOrCallvirt<Centipede>("get_Centiwing")))
             {
                 c.Emit(Ldarg_0);
                 c.EmitDelegate((bool flag, CentipedeAI self) => flag || (self.centipede is Centipede ce && ce.Template.type == EnumExt_Scutigera.Scutigera));

@@ -33,7 +33,8 @@ sealed class Scutigera
                         abstractCreature.state.meatLeft = 5;
                 });
             }
-            else ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.ctor!");
+            else
+                ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.ctor!");
         };
         On.Centipede.ctor += (orig, self, abstractCreature, world) =>
         {
@@ -93,7 +94,7 @@ sealed class Scutigera
                 ScutigeraPlugin.logger?.LogError("Couldn't ILHook Centipede.Violence! (part 2)");
             for (var i = 0; i < il.Instrs.Count; i++)
             {
-                if (il.Instrs[i].MatchCall<Centipede>("get_Red"))
+                if (il.Instrs[i].MatchCallOrCallvirt<Centipede>("get_Red"))
                 {
                     c.Goto(i, MoveType.After);
                     c.Emit(Ldarg_0);
@@ -105,12 +106,12 @@ sealed class Scutigera
         {
             ILCursor c = new(il);
             if (c.TryGotoNext(MoveType.After,
-                x => x.MatchCallvirt<HealthState>("get_ClampedHealth"),
+                x => x.MatchCallOrCallvirt<HealthState>("get_ClampedHealth"),
                 x => x.MatchMul(),
                 x => x.MatchCall<Mathf>("Lerp"),
                 x => x.MatchCall<Vector2>("op_Multiply"),
                 x => x.MatchLdarg(0),
-                x => x.MatchCall<Centipede>("get_Red")))
+                x => x.MatchCallOrCallvirt<Centipede>("get_Red")))
             {
                 c.Emit(Ldarg_0);
                 c.EmitDelegate((bool flag, Centipede self) => flag || self.Template.type == EnumExt_Scutigera.Scutigera);
@@ -170,9 +171,8 @@ public class ScutigeraShell : CentipedeShell
     public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
         base.InitiateSprites(sLeaser, rCam);
-        sLeaser.sprites[0] = new("ScutigeraBackShell");
-        sLeaser.sprites[1] = new("ScutigeraBackShell");
-        AddToContainer(sLeaser, rCam, null);
+        sLeaser.sprites[0].element = Futile.atlasManager.GetElementWithName("ScutigeraBackShell");
+        sLeaser.sprites[1].element = Futile.atlasManager.GetElementWithName("ScutigeraBackShell");
     }
 }
 

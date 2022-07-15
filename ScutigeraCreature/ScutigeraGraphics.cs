@@ -37,7 +37,7 @@ sealed class ScutigeraGraphics
             if (c.TryGotoNext(
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<CentipedeGraphics>("centipede"),
-                x => x.MatchCallvirt<Centipede>("get_Red"),
+                x => x.MatchCallOrCallvirt<Centipede>("get_Red"),
                 x => x.MatchBrfalse(out _),
                 x => x.MatchLdcI4(0),
                 x => x.MatchStloc(7),

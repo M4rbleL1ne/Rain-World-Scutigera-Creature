@@ -41,7 +41,7 @@ sealed class ScutigeraMisc
             if (c.TryGotoNext(MoveType.After,
                 x => x.MatchLdarg(0),
                 x => x.MatchLdfld<UpdatableAndDeletable>("room"),
-                x => x.MatchCallvirt<Room>("get_abstractRoom"),
+                x => x.MatchCallOrCallvirt<Room>("get_abstractRoom"),
                 x => x.MatchLdfld<AbstractRoom>("creatures"),
                 x => x.MatchLdloc(out loc1),
                 x => x.MatchCallvirt(out callvirt2),
@@ -74,7 +74,7 @@ sealed class ScutigeraMisc
                 x => x.MatchLdarg(1),
                 x => x.MatchLdfld<RelationshipTracker.DynamicRelationship>("trackerRep"),
                 x => x.MatchLdfld<Tracker.CreatureRepresentation>("representedCreature"),
-                x => x.MatchCall<ArtificialIntelligence>("StaticRelationship"),
+                x => x.MatchCallOrCallvirt<ArtificialIntelligence>("StaticRelationship"),
                 x => x.MatchStloc(out stloc1))
             && stloc1 != -1)
             {
